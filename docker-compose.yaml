@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+
+
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - web-db
+    command: bash -c "aerich init -t app.models.migrations.TORTOISE_ORM && aerich init-db && uvicorn app.main:app --reload --workers 1 --host 0.0.0.0 --port 8000"
+    environment:
+      - ENVIRONMENT=dev
+      - TESTING=0
+      - DATABASE_URL=postgres://postgres:postgres@web-db:5432/web_dev
+      - DATABASE_TEST_URL=postgres://postgres:postgres@web-db:5432/web_test
+
+    volumes:
+      - ./app:/usr/src/project/app
+      - ./tests:/usr/src/project/tests
+    ports:
+      - 8004:8000
+
+  web-db:
+    build: ./db
+
+    expose:
+      - 5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+
+
+
